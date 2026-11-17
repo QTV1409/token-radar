@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Launch Radar — token launch radar</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="pulse" aria-hidden="true"></span><div><h1>LAUNCH RADAR</h1><p>Token launch radar &middot; pre-token protocols, ranked by implied value</p></div></div>
+  <div class="asof"><span id="asOf">Snapshot —</span><span id="srcLine" class="dim"></span></div>
+</header>
+
+<section class="stats" id="stats"></section>
+
+<nav class="views" id="views">
+  <button data-view="board" class="active">Board</button>
+  <button data-view="model">How the model works</button>
+  <button data-view="live">Live-token comparables</button>
+</nav>
+
+<main>
+  <section id="view-board" class="view">
+    <div class="filters">
+      <input id="q" type="search" placeholder="Search name or slug…" aria-label="Search protocols">
+      <select id="cat" aria-label="Filter by category"><option value="">All categories</option></select>
+      <select id="chain" aria-label="Filter by chain"><option value="">All chains</option></select>
+      <select id="minTvl" aria-label="Minimum TVL">
+        <option value="0">Any TVL</option>
+        <option value="50000000">TVL $50M+</option>
+        <option value="100000000">TVL $100M+</option>
+        <option value="1000000000">TVL $1B+</option>
+      </select>
+      <select id="sort" aria-label="Sort board">
+        <option value="rank">Sort: rank</option>
+        <option value="tvl">Sort: TVL</option>
+        <option value="growth">Sort: 7-day growth</option>
+        <option value="age">Sort: age</option>
+      </select>
+      <span id="count" class="dim"></span>
+    </div>
+    <p class="note">Every row records <strong>no token</strong> in the snapshot — that is what the radar ranks. Implied value = TVL &times; category multiple &times; growth &times; age. Click a row for its farm plan.</p>
+    <table id="board">
+      <thead><tr>
+        <th data-k="rank">#</th><th data-k="name">Protocol</th><th data-k="category">Category</th>
+        <th data-k="chains">Chains</th><th data-k="tvl" class="num">TVL</th>
+        <th data-k="growth" class="num">7d</th><th data-k="age" class="num">Age</th>
+        <th data-k="implied" class="num">Implied value</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <p class="dim small">Showing the top 60 matching rows. Narrow the filters to see the rest of the board.</p>
+  </section>
+
+  <section id="view-detail" class="view hidden">
+    <button id="back" class="back">&larr; Back to the board</button>
+    <div id="detail"></div>
+  </section>
+
+  <section id="view-model" class="view hidden">
+    <h2>How the model works</h2>
+    <p>The implied value of a protocol is what its token might be worth if it launched one day and the market priced it the way it prices the tokens that already trade. Nothing here is a prediction that a token will launch, or when — it is a ranking of <em>if</em>.</p>
+    <div class="formula">implied value = TVL &times; category multiple &times; growth multiplier &times; age multiplier</div>
+    <ul class="model-list">
+      <li><strong>Category multiple</strong> — the median market-cap / TVL ratio of the snapshot's tokened protocols in the same category (at least 3 of them, otherwise the global median of <span id="globalMult">—</span>). A DEX is priced like DEXes trade; a lender like lenders trade. Clamped to 0.05 – 1.50.</li>
+      <li><strong>Growth multiplier</strong> — 1 + (7-day TVL change, clamped to −50%…+150%) &times; 0.40. Fast growers score up to 1.60; shrinkers down to 0.80.</li>
+      <li><strong>Age multiplier</strong> — 0.85 + 0.15 &times; (days since first tracked, capped at 4 years) / 4 years. A protocol that ran for years with real usage and no token scores a little higher; unknown age counts as 2 years.</li>
+    </ul>
+    <h3>Category multiples, calibrated from this snapshot</h3>
+    <table id="mults"><thead><tr><th>Category</th><th class="num">Multiple</th><th class="num">Tokened protocols</th></tr></thead><tbody id="multRows"></tbody></table>
+    <p class="dim small">Multiples are recomputed from the snapshot on every run — no name is ever special-cased, and the same function scores every row.</p>
+  </section>
+
+  <section id="view-live" class="view hidden">
+    <h2>Live-token comparables</h2>
+    <p>These protocols already have a token that trades, so the board never ranks them — they are the market's own answer to what a token is worth at a given TVL, and the multiples above are calibrated from them.</p>
+    <table id="liveTable"><thead><tr><th>Protocol</th><th>Category</th><th class="num">TVL</th><th class="num">Market cap</th><th class="num">Mcap / TVL</th></tr></thead><tbody id="liveRows"></tbody></table>
+  </section>
+</main>
+
+<footer class="dim small">Implied values are this entry's own claim, never a market price. “Records no token” means the snapshot's DefiLlama record carries no token — a protocol on the list may still have one its record does not carry. Data: DefiLlama protocols, snapshot <span id="footAsOf">—</span>.</footer>
+<script src="../data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
